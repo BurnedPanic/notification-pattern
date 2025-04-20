@@ -1,7 +1,6 @@
 package com.burnedpanic.notificationpattern.domain;
 
 import com.burnedpanic.notificationpattern.domain.base.AbstractEntity;
-import com.burnedpanic.notificationpattern.domain.notification.DomainExceptionNotification;
 
 import static java.util.Objects.requireNonNull;
 
@@ -18,13 +17,16 @@ public class PersonalData extends AbstractEntity<String> {
                          int age,
                          Contact contact) {
         super(citizenId);
-        DomainExceptionNotification notification = new DomainExceptionNotification(PersonalData.class);
-
-        this.contact = notification.validateAndSet("contact", contact, DomainExceptionNotification.ValidationEnum.NULL);
         this.age = age;
-        this.name = notification.validateAndSet("name", name, DomainExceptionNotification.ValidationEnum.BLANK);
+        this.contact = requireNonNull(
+                contact,
+                "The contact cannot be null."
+        );
 
-        notification.validateDomainObject();
+        this.name = requireNonNull(
+                name,
+                "The name cannot be null."
+        );
     }
 
     public static PersonalData of(final String citizenId,

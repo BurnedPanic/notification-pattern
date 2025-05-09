@@ -1,10 +1,10 @@
 package com.burnedpanic.notificationpattern.domain;
 
-import com.burnedpanic.notificationpattern.domain.enumerate.Category;
-import com.burnedpanic.notificationpattern.domain.notification.DomainExceptionNotification;
 import com.burnedpanic.notificationpattern.domain.base.AbstractAggregateRoot;
+import com.burnedpanic.notificationpattern.domain.enumerate.Category;
 
-import static java.util.Objects.nonNull;
+import java.util.Arrays;
+
 import static java.util.Objects.requireNonNull;
 
 public class Athlete extends AbstractAggregateRoot<String> {
@@ -16,15 +16,14 @@ public class Athlete extends AbstractAggregateRoot<String> {
     private Athlete(String athleteId,
                     PersonalData personalData) {
         super(athleteId);
-
-        DomainExceptionNotification notification = new DomainExceptionNotification(Athlete.class);
-        this.personalData = notification.validateAndSet("personalData", personalData, DomainExceptionNotification.ValidationEnum.NULL);
-
-        if (nonNull(personalData)) {
-            this.category = notification.validateAndSet("category", Category.findCategoryFromAge(personalData().age()), DomainExceptionNotification.ValidationEnum.NULL);
-        }
-
-        notification.validateDomainObject();
+        this.personalData = requireNonNull(
+                personalData,
+                "The personalData cannot be null."
+        );
+        this.category = Arrays.stream(Category.values())
+                .filter(c -> personalData.age() >= c.minAge() && personalData.age() <= c.maxAge())
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Category not found for the age: " + personalData.age()));
     }
 
     public static Athlete create(final String athleteId,
